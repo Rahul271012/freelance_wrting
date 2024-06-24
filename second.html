@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Chat Bot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+    }
+
+    .chat-container {
+      width: 90%;
+      height: 96%;
+      background-color: #1E1E1E;
+      color: #FFFFFF;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background-color: #007bff;
+      color: #fff;
+      padding: 15px;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-body {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .chat-footer {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      border-top: 1px solid #ddd;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      resize: none;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    .chat-footer button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .chat-message {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+    }
+
+   .chat-message p {
+      padding: 10px;
+      border-radius: 8px;
+      width: auto;
+      max-width: 100%;
+      word-wrap: break-word;
+      box-sizing: border-box;
+      
+    }
+
+    .chat-message.incoming p {
+      background-color: #444;
+      color: #FFF;
+      box-shadow: inset 0 0 0.5px 1px hsla(0, 0%, 100%, 0.075),
+              0 0 0 1px hsla(0, 0%, 0%, 0.05),
+              0 0.3px 0.4px hsla(0, 0%, 0%, 0.02),
+              0 0.9px 1.5px hsla(0, 0%, 0%, 0.045),
+              0 3.5px 6px hsla(0, 0%, 0%, 0.09);
+    }
+
+    .chat-message.outgoing {
+      justify-content: flex-end;
+    }
+
+    .chat-message.outgoing p {
+      background-color: #1E1E1E;
+      color: #FFFFFF;
+      box-shadow: inset 0 0 0.5px 1px hsla(0, 0%, 100%, 0.075),
+              0 0 0 1px hsla(0, 0%, 0%, 0.05),
+              0 0.3px 0.4px hsla(0, 0%, 0%, 0.02),
+              0 0.9px 1.5px hsla(0, 0%, 0%, 0.045),
+              0 3.5px 6px hsla(0, 0%, 0%, 0.09);
+    }
+    .chat-options {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .chat-options button {
+      background-color: #f0f0f0;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+    #generate-button, #copy-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin: 5px;
+    }
+
+    #copy-button {
+      background-color: #4CAF50;
+      box-shadow: 0 5px #3e8e41;
+    }
+
+    #copy-button:hover {
+      background-color: #45a049;
+    }
+
+    #copy-button:active {
+      box-shadow: 0 2px #3e8e41;
+      transform: translateY(3px);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      Navi Chatbot
+      <button id="copy-button">Copy Prompt</button>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <div class="chat-message outgoing">
+        <p>Hi, how can I assist you?</p>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Enter a message..."></textarea>
+      <button id="send-message"><i class="fa fa-paper-plane"></i></button>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+  <script>
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+    const sendMessageButton = document.getElementById('send-message');
+    const copyButton = document.getElementById('copy-button');
+
+    const API_KEY = "use your api key";
+
+    const createChatMessage = (message, className) => {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('chat-message', className);
+
+      const messageContent = document.createElement('p');
+      messageContent.innerHTML = message;
+      messageDiv.appendChild(messageContent);
+
+      return messageDiv;
+    };
+
+    const appendMessage = (message, className) => {
+      const chatMessage = createChatMessage(message, className);
+      chatBody.appendChild(chatMessage);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    };
+
+    const autoResizeTextarea = (textarea) => {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight) + 'px';
+    };
+
+    const formatMessageAsList = (message) => {
+      const points = message.split('\n').filter(line => line.trim() !== '');
+      return '<ul>' + points.map(point => `<li>${point}</li>`).join('') + '</ul>';
+    };
+
+    const generateResponse = (message) => {
+      const API_URL = "https://api.openai.com/v1/chat/completions";
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${API_KEY}`
+        },
+        body: JSON.stringify({
+          "model": "gpt-3.5-turbo",
+          "messages": [{ role: "user", content: message }]
+        })
+      };
+      fetch(API_URL, requestOptions)
+        .then(res => res.json())
+        .then(data => {
+          const botMessage = data.choices[0].message.content;
+          const formattedMessage = formatMessageAsList(botMessage);
+          const clipboard = new ClipboardJS('#copy-button', {
+            text: function() {
+              return botMessage;
+            }
+          });
+
+          clipboard.on('success', function() {
+            alert("Prompt copied!");
+          });
+
+          appendMessage(formattedMessage, 'outgoing');
+        })
+        .catch(error => {
+          appendMessage("Oops! Something went wrong, please try again.", 'outgoing');
+        });
+    };
+
+    const handleSendMessage = () => {
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      appendMessage(message, 'incoming');
+      chatInput.value = '';
+      autoResizeTextarea(chatInput);
+      generateResponse(message);
+    };
+
+    chatInput.addEventListener('input', () => {
+      autoResizeTextarea(chatInput);
+    });
+
+    sendMessageButton.addEventListener('click', handleSendMessage);
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
